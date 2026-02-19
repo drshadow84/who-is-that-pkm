@@ -66,28 +66,44 @@ with st.sidebar:
     modo_movil = st.checkbox("Optimizar para Celular", value=True)
 
 # --- TABLERO PRINCIPAL ---
+# --- LÓGICA DE ORGANIZACIÓN ---
 if not personajes:
-    st.info("💡 Esperando fotos... Asegúrate de subir archivos .jpg o .png a la carpeta /fotos en tu GitHub.")
+    st.info("💡 Esperando fotos... Asegúrate de subir archivos a la carpeta /fotos.")
 else:
-    # Ajuste de columnas según el dispositivo
-    n_cols = 2 if modo_movil else 5
-    cols = st.columns(n_cols)
-    
-    for idx, foto in enumerate(personajes):
-        nombre = foto.split('.')[0].replace("_", " ").title()
-        url_foto = f"https://raw.githubusercontent.com/{USER}/{REPO}/main/{FOLDER}/{foto}"
-        
-        with cols[idx % n_cols]:
-            # Si el personaje está eliminado
-            if foto in st.session_state.eliminados:
-                st.image(url_foto, caption=f"❌ {nombre}", use_container_width=True, channels="BGR")
-                if st.button(f"✅ Activar", key=f"revive_{idx}"):
-                    st.session_state.eliminados.remove(foto)
-                    st.rerun()
-            # Si el personaje está activo
-            else:
-                st.image(url_foto, caption=nombre, use_container_width=True)
-                if st.button(f"🚫 Descartar", key=f"hide_{idx}"):
-                    st.session_state.eliminados.add(foto)
+    # 1. Separamos los personajes en dos listas
+    sospechosos = [p for p in personajes if p not in st.session_state.eliminados]
+    descartados = [p for p in personajes if p in st.session_state.eliminados]
 
+    n_cols = 2 if modo_movil else 5
+
+    # --- SECCIÓN 1: SOSPECHOSOS (Arriba) ---
+    st.subheader(f"🔍 Sospechosos ({len(sospechosos)})")
+    if sospechosos:
+        cols_sos = st.columns(n_cols)
+        for idx, foto in enumerate(sospechosos):
+            nombre = foto.split('.')[0].replace("_", " ").title()
+            url_foto = f"https://raw.githubusercontent.com/{USER}/{REPO}/main/{FOLDER}/{foto}"
+            with cols_sos[idx % n_cols]:
+                st.image(url_foto, caption=nombre, use_container_width=True)
+                if st.button(f"🚫 Descartar", key=f"hide_{foto}"):
+                    st.session_state.eliminados.add(foto)
                     st.rerun()
+    else:
+        st.write("¡Has descartado a todos! ¿Ya sabes quién es?")
+
+    st.markdown("---") # Línea divisoria visual
+
+    # --- SECCIÓN 2: DESCARTADOS (Abajo) ---
+    if descartados:
+        with st.expander("Ver personajes descartados", expanded=True):
+            cols_des = st.columns(n_cols)
+            for idx, foto in enumerate(descartados):
+                nombre = foto.split('.')[0].replace("_", " ").title()
+                url_foto = f"https://raw.githubusercontent.com/{USER}/{REPO}/main/{FOLDER}/{foto}"
+                with cols_des[idx % n_cols]:
+                    # Mostramos la imagen en blanco y negro (BGR para simular gris en Streamlit)
+                    st.image(url_foto, caption=f"❌ {nombre}", use_container_width=True, channels="BGR")
+                    if st.button(f"✅ Activar", key=f"revive_{foto}"):
+                        st.session_state.eliminados.remove(foto)
+                        st.rerun()
+
