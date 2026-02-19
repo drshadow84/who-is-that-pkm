@@ -7,11 +7,11 @@ st.set_page_config(page_title="Guess Who Familiar", layout="wide")
 
 # --- CONFIGURACIÓN DE GITHUB ---
 # REEMPLAZA ESTOS DATOS CON LOS TUYOS
-USER = "TuUsuarioDeGitHub" 
-REPO = "nombre-de-tu-repo"
-FOLDER = "fotos"
+USER = "drshadow84" 
+REPO = "who-is-that-pkm"
+FOLDER = "photos"
 
-st.title("🕵️‍♂️ Guess Who? - Edición Familiar")
+st.title("🕵️‍♂️ Guess Who? - Edición PKM")
 
 # Función para traer las fotos de GitHub
 @st.cache_data
@@ -89,4 +89,5 @@ else:
                 st.image(url_foto, caption=nombre, use_container_width=True)
                 if st.button(f"🚫 Descartar", key=f"hide_{idx}"):
                     st.session_state.eliminados.add(foto)
+
                     st.rerun()
